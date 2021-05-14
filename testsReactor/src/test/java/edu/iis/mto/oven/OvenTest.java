@@ -2,6 +2,7 @@ package edu.iis.mto.oven;
 
 import static edu.iis.mto.oven.Oven.HEAT_UP_AND_FINISH_SETTING_TIME;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import org.hamcrest.MatcherAssert;
@@ -104,6 +105,16 @@ class OvenTest {
         oven.start(sampleBakingProgram);
         verify(heatingModule).heater(heatingSettings);
 
+    }
+
+    @Test
+    void shouldThrowOvenExceptionWhenInvokeTermalCircuit() throws HeatingException {
+        BakingProgram sampleBakingProgram = BakingProgram.builder().withInitialTemp(0).withStages(List.of(sampleTermoCirculationStage)).build();
+
+        doNothing().when(fan).on();
+        doThrow(new OvenException(new HeatingException())).when(heatingModule).termalCircuit(any());
+
+        assertThrows(OvenException.class, () -> oven.start(sampleBakingProgram));
     }
 
 
