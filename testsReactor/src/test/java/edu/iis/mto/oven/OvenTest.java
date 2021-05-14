@@ -2,8 +2,7 @@ package edu.iis.mto.oven;
 
 import static edu.iis.mto.oven.Oven.HEAT_UP_AND_FINISH_SETTING_TIME;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,5 +45,15 @@ class OvenTest {
 
         verify(heatingModule).heater(expectedSettings);
     }
+
+    @Test
+    void shouldNotInvokeHeatingModuleHeaterWhenInitialTemperatureIsZero() {
+        BakingProgram sampleBakingProgram = BakingProgram.builder().withInitialTemp(0).withStages(Collections.emptyList()).build();
+
+        oven.start(sampleBakingProgram);
+
+        verify(heatingModule, never()).heater(any());
+    }
+
 
 }
