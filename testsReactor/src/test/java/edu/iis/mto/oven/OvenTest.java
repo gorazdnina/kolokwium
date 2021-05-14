@@ -26,6 +26,8 @@ class OvenTest {
 
     Oven oven;
     ProgramStage sampleTermoCirculationStage = ProgramStage.builder().withStageTime(10).withHeat(HeatType.THERMO_CIRCULATION).withTargetTemp(150).build();
+    ProgramStage sampleGrillStage = ProgramStage.builder().withStageTime(10).withHeat(HeatType.GRILL).withTargetTemp(150).build();
+
 
     @BeforeEach
     public void setUp(){
@@ -68,6 +70,22 @@ class OvenTest {
         inOrder.verify(fan).on();
         inOrder.verify(heatingModule).termalCircuit(any());
         inOrder.verify(fan).off();
+
+    }
+
+    @Test
+    void shouldInvokeHeatingProgramGrillWithCorrectSettingsWhenHitTypeIsGrill() throws HeatingException {
+
+        BakingProgram sampleBakingProgram = BakingProgram.builder().withInitialTemp(0).withStages(List.of(sampleGrillStage)).build();
+        when(fan.isOn()).thenReturn(false);
+        HeatingSettings heatingSettings = HeatingSettings.builder()
+                .withTargetTemp(sampleGrillStage.getTargetTemp())
+                .withTimeInMinutes(sampleGrillStage.getStageTime())
+                .build();
+        doNothing().when(heatingModule).grill(heatingSettings);
+
+        oven.start(sampleBakingProgram);
+        verify(heatingModule).grill(heatingSettings);
 
     }
 
