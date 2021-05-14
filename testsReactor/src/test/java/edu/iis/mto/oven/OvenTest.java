@@ -8,6 +8,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -24,8 +25,7 @@ class OvenTest {
     private Fan fan;
 
     Oven oven;
-    ProgramStage sampleProgramStage = ProgramStage.builder().withStageTime(10).withHeat(HeatType.GRILL).withTargetTemp(150).build();
-    BakingProgram sampleBakingProgram = BakingProgram.builder().withInitialTemp(50).withStages(List.of(sampleProgramStage)).build();
+    ProgramStage sampleTermoCirculationStage = ProgramStage.builder().withStageTime(10).withHeat(HeatType.THERMO_CIRCULATION).withTargetTemp(150).build();
 
     @BeforeEach
     public void setUp(){
@@ -54,6 +54,24 @@ class OvenTest {
 
         verify(heatingModule, never()).heater(any());
     }
+
+    @Test
+    void shouldRunTermoCirculationStageInCorrectOrder() throws HeatingException {
+        BakingProgram sampleBakingProgram = BakingProgram.builder().withInitialTemp(0).withStages(List.of(sampleTermoCirculationStage)).build();
+        doNothing().when(fan).on();
+        doNothing().when(heatingModule).termalCircuit(any());
+        doNothing().when(fan).off();
+
+        oven.start(sampleBakingProgram);
+
+        InOrder inOrder = inOrder(heatingModule, fan);
+        inOrder.verify(fan).on();
+        inOrder.verify(heatingModule).termalCircuit(any());
+        inOrder.verify(fan).off();
+
+    }
+
+
 
 
 }
